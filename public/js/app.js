@@ -374,8 +374,8 @@ class PortfolioDashboard {
       if (ticker && ticker.lastPrice) return parseFloat(ticker.lastPrice);
     }
 
-    console.warn(`[Price] No price found for ${asset}, using 1 as fallback`);
-    return 1;
+    console.warn(`[Price] No price found for ${asset}, using 0 as fallback`);
+    return 0; // Asset value will be 0 until price is found
   }
 }
 
