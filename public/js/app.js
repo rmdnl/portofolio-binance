@@ -209,8 +209,13 @@ class PortfolioDashboard {
         this.data.trades = msg.data.trades || this.data.trades;
         this.data.unrealizedPnL = msg.data.unrealizedPnL || this.data.unrealizedPnL;
         this.data.realizedPnL = msg.data.realizedPnL || this.data.realizedPnL;
-        this.data.prices = msg.data.prices || this.data.prices;
-        this.data.ticker24hr = msg.data.ticker24hr || this.data.ticker24hr;
+        // Only update prices if snapshot has them (avoid wiping valid REST data)
+        if (msg.data.prices && msg.data.prices.length > 0) {
+          this.data.prices = msg.data.prices;
+        }
+        if (msg.data.ticker24hr && msg.data.ticker24hr.length > 0) {
+          this.data.ticker24hr = msg.data.ticker24hr;
+        }
         this.data.lastUpdate = msg.data.lastUpdate || Date.now();
         this.ui.renderAll(this.data);
         this.charts.update(this.data);
