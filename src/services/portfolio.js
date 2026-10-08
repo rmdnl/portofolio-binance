@@ -60,12 +60,14 @@ class PortfolioService extends EventEmitter {
         this.binance.getFuturesPositions()
       ]);
 
-      this.cache.accountInfo = spotAccount.status === 'fulfilled' ? spotAccount.value : null;
-      this.cache.balances = this.parseBalances(
-        spotAccount.status === 'fulfilled' ? spotAccount.value : null,
-        futuresAccount.status === 'fulfilled' ? futuresAccount.value : null
-      );
-      this.cache.positions = futuresPositions.status === 'fulfilled' ? this.parsePositions(futuresPositions.value) : [];
+      // Extract values from settled promises
+      const spotValue = spotAccount.status === 'fulfilled' ? spotAccount.value : { balances: [] };
+      const futuresValue = futuresAccount.status === 'fulfilled' ? futuresAccount.value : { assets: [] };
+      const positionsValue = futuresPositions.status === 'fulfilled' ? futuresPositions.value : [];
+
+      this.cache.accountInfo = spotValue;
+      this.cache.balances = this.parseBalances(spotValue, futuresValue);
+      this.cache.positions = this.parsePositions(positionsValue);
       this.cache.lastUpdate = Date.now();
       
       this.emit('balances', this.cache.balances);
@@ -81,8 +83,8 @@ class PortfolioService extends EventEmitter {
     const balances = [];
     const seen = new Set();
 
-    if (spotResult.status === 'fulfilled') {
-      spotResult.value.balances.forEach(b => {
+    if (spotResult && spotResult.balances) {
+      spotResult.balances.forEach(b => {
         const free = parseFloat(b.free);
         const locked = parseFloat(b.locked);
         const total = free + locked;
@@ -99,8 +101,8 @@ class PortfolioService extends EventEmitter {
       });
     }
 
-    if (futuresResult.status === 'fulfilled') {
-      futuresResult.value.assets.forEach(a => {
+    if (futuresResult && futuresResult.assets) {
+      futuresResult.assets.forEach(a => {
         const walletBalance = parseFloat(a.walletBalance);
         const crossWalletBalance = parseFloat(a.crossWalletBalance);
         const availableBalance = parseFloat(a.availableBalance);
