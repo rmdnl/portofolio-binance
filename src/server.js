@@ -35,11 +35,12 @@ app.use(helmet({
   contentSecurityPolicy: NODE_ENV === 'production' ? {
     directives: {
       defaultSrc: ["'self'"],
-      scriptSrc: ["'self'", "'unsafe-inline'"],
+      scriptSrc: ["'self'", "'unsafe-inline'", 'https://cdn.jsdelivr.net', 'https://static.cloudflareinsights.com'],
       styleSrc: ["'self'", "'unsafe-inline'", 'https://fonts.googleapis.com'],
       fontSrc: ["'self'", 'https://fonts.gstatic.com'],
       imgSrc: ["'self'", 'data:', 'https:'],
-      connectSrc: ["'self'", 'ws:', 'wss:'],
+      connectSrc: ["'self'", 'ws:', 'wss:', 'https://api.exchangerate-api.com', 'https://open.er-api.com', 'https://api.frankfurter.dev'],
+      workerSrc: ["'self'", 'blob:'],
     }
   } : false,
   crossOriginEmbedderPolicy: false
