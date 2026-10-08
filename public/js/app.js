@@ -312,11 +312,7 @@ class PortfolioDashboard {
     let total = 0;
     for (const balance of this.data.balances) {
       if (balance.total > 0) {
-        let price = 1;
-        if (balance.asset !== 'USDT' && balance.asset !== 'USDC' && balance.asset !== 'BUSD') {
-          const pair = `${balance.asset}USDT`;
-          price = this.getPrice(pair) || 1;
-        }
+        let price = this.getAssetPrice(balance.asset);
         total += balance.total * price;
       }
     }
@@ -324,6 +320,57 @@ class PortfolioDashboard {
       total += pos.notional || 0;
     }
     return total;
+  }
+
+  getAssetPrice(asset) {
+    // Stablecoins = 1 USD
+    if (['USDT', 'USDC', 'BUSD', 'TUSD', 'FDUSD', 'USDP', 'DAI'].includes(asset)) {
+      return 1;
+    }
+
+    // Known staked/liquid staking tokens - map to underlying asset
+    const stakedMap = {
+      'LDSOL': 'SOL',
+      'STSOL': 'SOL',
+      'MSOL': 'SOL',
+      'BSOL': 'SOL',
+      'BETH': 'ETH',
+      'WBETH': 'ETH',
+      'STETH': 'ETH',
+      'WSTETH': 'ETH',
+      'RETH': 'ETH',
+      'CBETH': 'ETH',
+      'SFRXETH': 'ETH',
+      'FRXETH': 'ETH',
+      'ANKRETH': 'ETH',
+      'SOLVBNB': 'BNB',
+      'BNSOL': 'SOL',
+      'JITOSOL': 'SOL',
+      'INJSOL': 'SOL',
+      'KYVE': 'SOL',
+    };
+
+    const underlying = stakedMap[asset];
+    const symbolsToTry = [];
+
+    if (underlying) {
+      symbolsToTry.push(`${underlying}USDT`);
+    }
+    symbolsToTry.push(`${asset}USDT`, `${asset}BUSD`, `${asset}USDC`, `${asset}FDUSD`);
+
+    for (const pair of symbolsToTry) {
+      const price = this.getPrice(pair);
+      if (price) return price;
+    }
+
+    // Fallback: try to get from 24hr ticker
+    for (const pair of symbolsToTry) {
+      const ticker = this.getTicker24hr(pair);
+      if (ticker && ticker.lastPrice) return parseFloat(ticker.lastPrice);
+    }
+
+    console.warn(`[Price] No price found for ${asset}, using 0`);
+    return 0;
   }
 }
 

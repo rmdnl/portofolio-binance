@@ -269,23 +269,34 @@ export class UIManager {
     const tbody = document.querySelector('#balances-table tbody');
 
     tbody.innerHTML = balances.map(b => {
-      let price = 1;
+      let price = this.dashboard.getAssetPrice(b.asset);
       let change24h = 0;
       
-      if (b.asset !== 'USDT' && b.asset !== 'USDC' && b.asset !== 'BUSD') {
-        const pair = `${b.asset}USDT`;
-        price = this.dashboard.getPrice(pair) || 1;
+      // Try to get 24h change from ticker
+      const pairsToTry = [
+        `${b.asset}USDT`, 
+        `${b.asset}BUSD`, 
+        `${b.asset}USDC`, 
+        `${b.asset}FDUSD`
+      ];
+      for (const pair of pairsToTry) {
         const ticker = this.dashboard.getTicker24hr(pair);
-        if (ticker) change24h = parseFloat(ticker.priceChangePercent);
+        if (ticker) {
+          change24h = parseFloat(ticker.priceChangePercent);
+          break;
+        }
       }
       
       const value = b.total * price;
       const pct = totalValue > 0 ? (value / totalValue) * 100 : 0;
+      
+      const stakedBadge = b.isStaked ? '<span class="staked-badge">● STAKED</span>' : '';
+      const typeBadge = `<span class="side-badge ${b.type.toLowerCase()}">${b.type}</span>`;
 
       return `
         <tr>
-          <td class="symbol-cell">${b.asset}</td>
-          <td><span class="side-badge ${b.type.toLowerCase()}">${b.type}</span></td>
+          <td class="symbol-cell">${b.asset} ${stakedBadge}</td>
+          <td>${typeBadge}</td>
           <td>${formatNumber(b.free)}</td>
           <td>${formatNumber(b.locked)}</td>
           <td><strong>${formatNumber(b.total)}</strong></td>

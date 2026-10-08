@@ -124,6 +124,17 @@ class PortfolioService extends EventEmitter {
       });
     }
 
+    // Mark staked/locked assets for UI
+    const stakedAssets = new Set([
+      'LDSOL', 'STSOL', 'MSOL', 'BSOL', 'BNSOL', 'JITOSOL', 'INJSOL',
+      'BETH', 'WBETH', 'STETH', 'WSTETH', 'RETH', 'CBETH', 'SFRXETH', 'FRXETH', 'ANKRETH',
+      'SOLVBNB'
+    ]);
+    
+    balances.forEach(b => {
+      b.isStaked = stakedAssets.has(b.asset) || b.locked > 0;
+    });
+
     return balances.sort((a, b) => b.total - a.total);
   }
 

@@ -814,6 +814,26 @@ body {
   color: var(--danger);
 }
 
+.staked-badge {
+  display: inline-block;
+  margin-left: 0.5rem;
+  padding: 0.1rem 0.4rem;
+  border-radius: 3px;
+  font-size: 0.55rem;
+  font-weight: 700;
+  text-transform: uppercase;
+  letter-spacing: 0.05em;
+  background: rgba(0, 212, 255, 0.15);
+  color: var(--accent-secondary);
+  border: 1px solid var(--accent-secondary);
+  animation: pulse-staked 2s ease-in-out infinite;
+}
+
+@keyframes pulse-staked {
+  0%, 100% { opacity: 1; }
+  50% { opacity: 0.6; }
+}
+
 .empty-state {
   display: flex;
   flex-direction: column;
