@@ -61,7 +61,10 @@ class PortfolioService extends EventEmitter {
       ]);
 
       this.cache.accountInfo = spotAccount.status === 'fulfilled' ? spotAccount.value : null;
-      this.cache.balances = this.parseBalances(spotAccount, futuresAccount);
+      this.cache.balances = this.parseBalances(
+        spotAccount.status === 'fulfilled' ? spotAccount.value : null,
+        futuresAccount.status === 'fulfilled' ? futuresAccount.value : null
+      );
       this.cache.positions = futuresPositions.status === 'fulfilled' ? this.parsePositions(futuresPositions.value) : [];
       this.cache.lastUpdate = Date.now();
       
@@ -325,13 +328,12 @@ class PortfolioService extends EventEmitter {
   }
 
   getAccountInfo() {
-    if (!this.cache.accountInfo) throw new Error('Account info not loaded yet');
-    return this.cache.accountInfo;
+    return this.cache.accountInfo || { balances: [], canTrade: false, userId: '' };
   }
 
   getBalances() {
-    if (!this.cache.balances) throw new Error('Balances not loaded yet');
-    return this.cache.balances;
+    // Return empty array if not loaded yet (prevents null errors)
+    return this.cache.balances || [];
   }
 
   getPositions() {
