@@ -161,18 +161,26 @@ class PortfolioService extends EventEmitter {
 
   async refreshTrades() {
     try {
+      const balances = this.cache.balances || [];
       const positions = this.cache.positions || [];
-      const symbols = [...new Set(positions.map(p => p.symbol))];
       
-      const spotSymbols = ['BTCUSDT', 'ETHUSDT', 'BNBUSDT', 'SOLUSDT', 'DOGEUSDT', 'XRPUSDT', 'ADAUSDT'];
-      const allSymbols = [...new Set([...symbols, ...spotSymbols])];
+      // Build symbols from balances and positions
+      const balanceSymbols = balances
+        .filter(b => b.total > 0)
+        .map(b => `${b.asset}USDT`);
+      const positionSymbols = positions.map(p => p.symbol);
+      
+      // Include common pairs as fallback
+      const commonSymbols = ['BTCUSDT', 'ETHUSDT', 'BNBUSDT', 'SOLUSDT'];
+      
+      const allSymbols = [...new Set([...balanceSymbols, ...positionSymbols, ...commonSymbols])];
 
       const trades = [];
-      for (const symbol of allSymbols.slice(0, 10)) {
+      for (const symbol of allSymbols.slice(0, 20)) {
         try {
           const [spotTrades, futuresTrades] = await Promise.allSettled([
-            this.binance.getSpotTrades(symbol, 20),
-            this.binance.getFuturesTrades(symbol, 20)
+            this.binance.getSpotTrades(symbol, 50),
+            this.binance.getFuturesTrades(symbol, 50)
           ]);
 
           if (spotTrades.status === 'fulfilled') {

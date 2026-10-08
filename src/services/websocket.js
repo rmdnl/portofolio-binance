@@ -50,8 +50,8 @@ export class WebSocketManager {
     this.portfolio.on('trades', (data) => this.broadcast({ type: 'trades', data: data.slice(0, 20) }));
     this.portfolio.on('unrealizedPnL', (data) => this.broadcast({ type: 'unrealizedPnL', data }));
     this.portfolio.on('realizedPnL', (data) => this.broadcast({ type: 'realizedPnL', data }));
-    this.portfolio.on('prices', (data) => this.broadcast({ type: 'prices', data: data.slice(0, 50) }));
-    this.portfolio.on('ticker24hr', (data) => this.broadcast({ type: 'ticker24hr', data: data.slice(0, 30) }));
+    this.portfolio.on('prices', (data) => this.broadcast({ type: 'prices', data }));
+    this.portfolio.on('ticker24hr', (data) => this.broadcast({ type: 'ticker24hr', data }));
   }
 
   startPingInterval() {
@@ -113,10 +113,11 @@ export class WebSocketManager {
       snapshot.realizedPnL = this.portfolio.getRealizedPnL();
     }
     if (channels.includes('all') || channels.includes('prices')) {
-      snapshot.prices = this.portfolio.getCachedPrices().slice(0, 50);
+      // Send full price list for accurate client-side calculations
+      snapshot.prices = this.portfolio.getCachedPrices();
     }
     if (channels.includes('all') || channels.includes('ticker24hr')) {
-      snapshot.ticker24hr = this.portfolio.getCachedTicker24hr().slice(0, 30);
+      snapshot.ticker24hr = this.portfolio.getCachedTicker24hr();
     }
 
     snapshot.lastUpdate = this.portfolio.getLastUpdate();
