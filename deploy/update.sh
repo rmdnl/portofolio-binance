@@ -22,7 +22,6 @@ cd "${APP_DIR}"
 log "Pulling latest changes..."
 sudo -u "${APP_USER}" git pull
 
-cd "${APP_DIR}/portfolio-dashboard"
 log "Installing/updating dependencies..."
 sudo -u "${APP_USER}" npm ci --production
 

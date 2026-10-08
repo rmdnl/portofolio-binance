@@ -70,15 +70,15 @@ fi
 
 # Install npm dependencies
 log "Installing npm dependencies..."
-cd "${APP_DIR}/portfolio-dashboard"
+cd "${APP_DIR}"
 sudo -u "${APP_USER}" npm ci --production
 
 # Setup environment file
 log "Setting up environment configuration..."
-if [[ ! -f "${APP_DIR}/portfolio-dashboard/config/.env" ]]; then
-    sudo -u "${APP_USER}" cp "${APP_DIR}/portfolio-dashboard/config/.env.example" "${APP_DIR}/portfolio-dashboard/config/.env"
+if [[ ! -f "${APP_DIR}/config/.env" ]]; then
+    sudo -u "${APP_USER}" cp "${APP_DIR}/config/.env.example" "${APP_DIR}/config/.env"
     warn "Created .env from example. YOU MUST EDIT IT WITH YOUR BINANCE API KEYS!"
-    warn "Edit: ${APP_DIR}/portfolio-dashboard/config/.env"
+    warn "Edit: ${APP_DIR}/config/.env"
 else
     log ".env already exists"
 fi
@@ -87,17 +87,17 @@ fi
 log "Setting file permissions..."
 chown -R "${APP_USER}:${APP_USER}" "${APP_DIR}"
 chmod 750 "${APP_DIR}"
-chmod 640 "${APP_DIR}/portfolio-dashboard/config/.env"
+chmod 640 "${APP_DIR}/config/.env"
 
 # Install systemd service
 log "Installing systemd service..."
-cp "${APP_DIR}/portfolio-dashboard/deploy/portfolio-dashboard.service" /etc/systemd/system/
+cp "${APP_DIR}/deploy/portfolio-dashboard.service" /etc/systemd/system/
 systemctl daemon-reload
 systemctl enable "${APP_NAME}"
 
 # Configure nginx
 log "Configuring nginx..."
-cp "${APP_DIR}/portfolio-dashboard/deploy/nginx.conf" /etc/nginx/sites-available/${APP_NAME}
+cp "${APP_DIR}/deploy/nginx.conf" /etc/nginx/sites-available/${APP_NAME}
 ln -sf /etc/nginx/sites-available/${APP_NAME} /etc/nginx/sites-enabled/
 rm -f /etc/nginx/sites-enabled/default
 
@@ -156,7 +156,7 @@ echo "║  PORTFOLIO DASHBOARD DEPLOYMENT COMPLETE                     ║"
 echo "╚══════════════════════════════════════════════════════════════╝"
 echo ""
 log "Next steps:"
-echo "  1. EDIT CONFIG: nano ${APP_DIR}/portfolio-dashboard/config/.env"
+echo "  1. EDIT CONFIG: nano ${APP_DIR}/config/.env"
 echo "     - Add your Binance READ-ONLY API keys"
 echo "     - Set BINANCE_TESTNET=false for mainnet"
 echo ""
@@ -165,7 +165,6 @@ echo ""
 echo "  3. CHECK LOGS: journalctl -u ${APP_NAME} -f"
 echo ""
 echo "  4. ACCESS DASHBOARD:"
-echo "     - HTTP:  http://$(curl -s ifconfig.me):80"
 echo "     - Direct: http://$(curl -s ifconfig.me):${PORT}"
 echo ""
 echo "  5. SETUP SSL (optional but recommended):"
@@ -173,11 +172,10 @@ echo "     certbot --nginx -d your-domain.com"
 echo ""
 echo "  6. MONITOR:"
 echo "     - Service: systemctl status ${APP_NAME}"
-echo "     - Nginx:   systemctl status nginx"
 echo "     - Logs:    journalctl -u ${APP_NAME} -f"
 echo ""
 
 # Show current .env status
-if grep -q "your_read_only_api_key_here" "${APP_DIR}/portfolio-dashboard/config/.env"; then
+if grep -q "your_read_only_api_key_here" "${APP_DIR}/config/.env"; then
     warn "⚠️  REMEMBER: You must configure your Binance API keys in .env before the dashboard will work!"
 fi
