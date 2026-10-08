@@ -198,7 +198,8 @@ export class UIManager {
     const totalValue = this.dashboard.calculatePortfolioValue();
     const unrealized = data.unrealizedPnL?.total || 0;
     const realized = data.realizedPnL?.netPnL || 0;
-    const totalChange = totalValue > 0 ? ((unrealized + realized) / (totalValue - unrealized - realized)) * 100 : 0;
+    const baseValue = totalValue - unrealized - realized;
+    const totalChange = baseValue > 0 ? ((unrealized + realized) / baseValue) * 100 : 0;
 
     this.elements.totalValue.textContent = this.formatCurrency(totalValue);
     this.elements.totalChange.textContent = `${totalChange >= 0 ? '+' : ''}${totalChange.toFixed(2)}%`;
